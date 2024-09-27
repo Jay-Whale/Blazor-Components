@@ -1,0 +1,97 @@
+<style>
+    .d-end-icon {
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+</style>
+
+<div class="d-flex flex-column">
+    @if (ButtonPosition == "top")
+    {
+        <span class="btn btn-clear w-100 @(ButtonColor != string.Empty ? ButtonColor : "")" @onclick="ApplySearch">Apply Search</span>
+    }
+    <div class="d-flex flex-row">
+        @if (ButtonPosition == "left")
+        {
+            <span class="btn btn-clear w-100 @(ButtonColor != string.Empty ? ButtonColor : "")" @onclick="ApplySearch">Apply Search</span>
+        }
+        <div class="position-relative w-100 d-flex my-1">
+            <input type="text" class="form-control" placeholder="Search" @bind="SearchTerm" @onblur="ApplyOnInput"/>
+            <span class="btn btn-clear d-end-icon" @onclick="ClearSearch">&#10006;</span>
+        </div>
+        @if (ButtonPosition == "right")
+        {
+            <span class="btn btn-clear w-100 @(ButtonColor != string.Empty ? ButtonColor : "")" @onclick="ApplySearch">Apply Search</span>
+        }
+    </div>
+    @if (ButtonPosition == "bottom")
+    {
+        <span class="btn btn-clear w-100 @(ButtonColor != string.Empty ? ButtonColor : "")" @onclick="ApplySearch">Apply Search</span>
+    }
+</div>
+
+@code {
+    // Pass the search term out to the parent component
+    [Parameter]
+    public string? SearchTerm { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? ButtonColor { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? ButtonPosition { get; set; } = string.Empty;
+
+    // Event callback to notify parent component when the search term is applied
+    [Parameter]
+    public EventCallback<string> OnApplySearch { get; set; }
+
+    // Event callback to notify parent component when the search term changes
+    [Parameter]
+    public EventCallback<string> SearchTermChanged { get; set; }
+
+    private async Task ClearSearch()
+    {
+        SearchTerm = string.Empty;
+
+        // Notify the parent component that the search term has changed
+        await SearchTermChanged.InvokeAsync(SearchTerm);
+    }
+
+    private async Task ApplySearch()
+    {
+        // Pass the current search term up to the parent component using the EventCallback
+        await OnApplySearch.InvokeAsync(SearchTerm);
+    }
+
+    private async Task ApplyOnInput()
+    {
+        if (ButtonPosition == "none")
+        {
+            // Notify the parent component that the search term has changed
+            await SearchTermChanged.InvokeAsync(SearchTerm);
+        }
+        else
+        {
+            return;
+        }
+    }
+}
+
+
+@*
+    Call the Component as follows:
+
+    <SearchWithClear @bind-SearchTerm="@searchTerm" ButtonPosition="bottom" ButtonColor="bg-132f38" OnApplySearch="@HandleApplySearch" />
+
+    @code {
+        private string searchTerm = string.Empty;
+
+        // Method to handle when the search term is applied from the child component
+        private void HandleApplySearch(string appliedSearchTerm)
+        {
+            searchTerm = appliedSearchTerm;
+            StateHasChanged();
+        }
+    }
+*@
